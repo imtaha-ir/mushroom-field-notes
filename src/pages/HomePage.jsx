@@ -8,10 +8,12 @@ import AddIcon from '@mui/icons-material/Add'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import ForestOutlinedIcon from '@mui/icons-material/ForestOutlined'
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import TripCard from '../components/TripCard.jsx'
 import TripFormDialog from '../components/TripFormDialog.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import { getAllTrips, saveTrip, deleteTrip, countSamples, genId } from '../db.js'
+import { shareTrip } from '../utils/export.js'
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -21,6 +23,7 @@ export default function HomePage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTrip, setEditingTrip] = useState(null)
   const [menu, setMenu] = useState({ anchor: null, trip: null })
+  const [sharingId, setSharingId] = useState(null)
 
   const load = async () => {
     setLoading(true)
@@ -51,6 +54,21 @@ export default function HomePage() {
     }
   }
 
+  const handleShare = async (trip) => {
+    setMenu({ anchor: null, trip: null })
+    setSharingId(trip.id)
+    try {
+      const result = await shareTrip(trip)
+      if (result === 'downloaded') {
+        window.alert('اشتراک‌گذاری مستقیم در این مرورگر پشتیبانی نمی‌شود؛ فایل زیپ دانلود شد.')
+      }
+    } catch (err) {
+      window.alert('ساخت فایل اشتراک‌گذاری با خطا مواجه شد.')
+    } finally {
+      setSharingId(null)
+    }
+  }
+
   return (
     <Box sx={{ pb: 10, minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar position="sticky" color="default" sx={{ bgcolor: 'background.paper' }}>
@@ -78,6 +96,7 @@ export default function HomePage() {
                 sampleCount={counts[trip.id] ?? 0}
                 onClick={() => navigate(`/trip/${trip.id}`)}
                 onMenuClick={(e) => setMenu({ anchor: e.currentTarget, trip })}
+                sharing={sharingId === trip.id}
               />
             ))}
           </Stack>
@@ -96,6 +115,9 @@ export default function HomePage() {
       <Menu anchorEl={menu.anchor} open={Boolean(menu.anchor)} onClose={() => setMenu({ anchor: null, trip: null })}>
         <MenuItem onClick={() => openEditDialog(menu.trip)}>
           <EditOutlinedIcon fontSize="small" sx={{ ml: 1 }} /> ویرایش
+        </MenuItem>
+        <MenuItem onClick={() => handleShare(menu.trip)}>
+          <ShareOutlinedIcon fontSize="small" sx={{ ml: 1 }} /> اشتراک‌گذاری (فایل زیپ)
         </MenuItem>
         <MenuItem onClick={() => handleDelete(menu.trip)} sx={{ color: 'error.main' }}>
           <DeleteOutlineIcon fontSize="small" sx={{ ml: 1 }} /> حذف

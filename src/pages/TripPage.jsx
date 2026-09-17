@@ -13,10 +13,12 @@ import WbCloudyOutlinedIcon from '@mui/icons-material/WbCloudyOutlined'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import SampleCard from '../components/SampleCard.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import TripFormDialog from '../components/TripFormDialog.jsx'
 import { getTrip, getSamplesByTrip, deleteSample, saveTrip } from '../db.js'
+import { buildTripZip, shareOrDownloadZip } from '../utils/export.js'
 
 function formatDate(iso) {
   if (!iso) return ''
@@ -36,6 +38,7 @@ export default function TripPage() {
   const [editOpen, setEditOpen] = useState(false)
   const [pageMenu, setPageMenu] = useState(null)
   const [sampleMenu, setSampleMenu] = useState({ anchor: null, sample: null })
+  const [sharing, setSharing] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -59,6 +62,23 @@ export default function TripPage() {
     await saveTrip(updated)
     setEditOpen(false)
     load()
+  }
+
+  const handleShare = async () => {
+    setPageMenu(null)
+    setSharing(true)
+    try {
+      const blob = await buildTripZip(trip, samples)
+      const filename = `${trip.title || 'برنامه'}${trip.date ? '-' + trip.date : ''}.zip`
+      const result = await shareOrDownloadZip(blob, filename)
+      if (result === 'downloaded') {
+        window.alert('اشتراک‌گذاری مستقیم در این مرورگر پشتیبانی نمی‌شود؛ فایل زیپ دانلود شد.')
+      }
+    } catch (err) {
+      window.alert('ساخت فایل اشتراک‌گذاری با خطا مواجه شد.')
+    } finally {
+      setSharing(false)
+    }
   }
 
   if (loading) {
@@ -85,7 +105,8 @@ export default function TripPage() {
             <ArrowForwardIcon />
           </IconButton>
           <Typography variant="h6" component="h1" noWrap sx={{ flex: 1 }}>{trip.title}</Typography>
-          <IconButton onClick={(e) => setPageMenu(e.currentTarget)}>
+          {sharing && <CircularProgress size={20} sx={{ ml: 1.5 }} />}
+          <IconButton onClick={(e) => setPageMenu(e.currentTarget)} disabled={sharing}>
             <MoreVertIcon />
           </IconButton>
         </Toolbar>
@@ -121,7 +142,7 @@ export default function TripPage() {
               <SampleCard
                 key={sample.id}
                 sample={sample}
-                onClick={() => navigate(`/trip/${tripId}/sample/${sample.id}`)}
+                onClick={() => navigate(`/trip/${tripId}/sample/${sample.id}/view`)}
                 onMenuClick={(e) => setSampleMenu({ anchor: e.currentTarget, sample })}
               />
             ))}
@@ -142,6 +163,9 @@ export default function TripPage() {
         <MenuItem onClick={() => { setEditOpen(true); setPageMenu(null) }}>
           <EditOutlinedIcon fontSize="small" sx={{ ml: 1 }} /> ویرایش اطلاعات برنامه
         </MenuItem>
+        <MenuItem onClick={handleShare}>
+          <ShareOutlinedIcon fontSize="small" sx={{ ml: 1 }} /> اشتراک‌گذاری برنامه (فایل زیپ)
+        </MenuItem>
       </Menu>
 
       <Menu
@@ -149,6 +173,14 @@ export default function TripPage() {
         open={Boolean(sampleMenu.anchor)}
         onClose={() => setSampleMenu({ anchor: null, sample: null })}
       >
+        <MenuItem
+          onClick={() => {
+            navigate(`/trip/${tripId}/sample/${sampleMenu.sample.id}`)
+            setSampleMenu({ anchor: null, sample: null })
+          }}
+        >
+          <EditOutlinedIcon fontSize="small" sx={{ ml: 1 }} /> ویرایش نمونه
+        </MenuItem>
         <MenuItem onClick={() => handleDeleteSample(sampleMenu.sample)} sx={{ color: 'error.main' }}>
           <DeleteOutlineIcon fontSize="small" sx={{ ml: 1 }} /> حذف نمونه
         </MenuItem>

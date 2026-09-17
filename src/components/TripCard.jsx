@@ -1,4 +1,4 @@
-import { Card, CardActionArea, Box, Typography, Stack, Chip, IconButton } from '@mui/material'
+import { Card, CardActionArea, Box, Typography, Stack, Chip, IconButton, CircularProgress } from '@mui/material'
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined'
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined'
@@ -13,7 +13,7 @@ function formatDate(iso) {
   }
 }
 
-export default function TripCard({ trip, sampleCount, onClick, onMenuClick }) {
+export default function TripCard({ trip, sampleCount, onClick, onMenuClick, sharing = false }) {
   return (
     <Card sx={{ borderRadius: 3 }}>
       <CardActionArea onClick={onClick} sx={{ p: 2 }}>
@@ -33,13 +33,17 @@ export default function TripCard({ trip, sampleCount, onClick, onMenuClick }) {
               )}
             </Stack>
           </Box>
-          <IconButton
-            size="small"
-            onClick={(e) => { e.stopPropagation(); onMenuClick(e) }}
-            sx={{ mt: -0.5, mr: -0.5 }}
-          >
-            <MoreVertIcon fontSize="small" />
-          </IconButton>
+          {sharing ? (
+            <CircularProgress size={20} sx={{ mt: 0.5, mr: 0.5 }} />
+          ) : (
+            <IconButton
+              size="small"
+              onClick={(e) => { e.stopPropagation(); onMenuClick(e) }}
+              sx={{ mt: -0.5, mr: -0.5 }}
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          )}
         </Stack>
 
         <Stack direction="row" spacing={1} sx={{ mt: 1.5 }} alignItems="center">
