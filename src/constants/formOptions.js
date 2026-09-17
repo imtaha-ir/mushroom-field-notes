@@ -8,13 +8,13 @@ export const CAP_SHAPE_OPTIONS = ['گرد', 'محدب', 'تخت', 'قیفی', '�
 export const CAP_SURFACE_OPTIONS = ['صاف', 'فلس‌دار', 'پوسته‌پوسته', 'مخملی', 'لزج', 'سایر']
 export const CAP_MARGIN_OPTIONS = ['صاف', 'شیاردار', 'موج‌دار', 'برگشته']
 
-export const HYMENOPHORE_SHAPE_OPTIONS = ['تیغه‌دار', 'منفذدار', 'دندانه‌دار', 'صاف']
+export const HYMENOPHORE_SHAPE_OPTIONS = ['تیغه‌دار', 'منفذدار', 'دندانه‌دار', 'صاف','سایر']
 
 export const STIPE_PRESENCE_OPTIONS = ['دارد', 'ندارد']
-export const STIPE_SHAPE_OPTIONS = ['باریک', 'ضخیم', 'پیازی', 'مخروطی']
+export const STIPE_SHAPE_OPTIONS = ['باریک', 'ضخیم', 'پیازی', 'مخروطی', 'سایر']
 export const STIPE_TEXTURE_OPTIONS = ['توپر', 'توخالی', 'نامشخص']
-export const RING_OPTIONS = ['دارد', 'ندارد']
-export const VOLVA_OPTIONS = ['دارد', 'ندارد']
+export const RING_OPTIONS = ['دارد', 'ندارد', 'نامشخص']
+export const VOLVA_OPTIONS = ['دارد', 'ندارد', 'نامشخص']
 
 export const FLESH_TEXTURE_OPTIONS = ['نرم', 'سفت', 'ژلاتینی', 'سایر']
 export const COLOR_CHANGE_OPTIONS = ['تغییر می‌کند', 'بدون تغییر', 'نامشخص']
@@ -22,7 +22,7 @@ export const COLOR_CHANGE_OPTIONS = ['تغییر می‌کند', 'بدون تغ�
 export const LATEX_OPTIONS = ['دارد', 'ندارد', 'بررسی نشد']
 export const SMELL_OPTIONS = ['خنثی', 'تند', 'ملایم', 'نامطبوع', 'خوشبو / میوه‌ای', 'قابل تشخیص نیست']
 
-export const PHOTO_TAGS = ['زیستگاه', 'بالای کلاهک', 'زیر کلاهک', 'برش عرضی', 'پایه', 'سایر']
+export const PHOTO_TAGS = ['زیستگاه', 'بستر', 'بالا', 'زیر', 'پایه', 'برش', 'سایر']
 
 export const WEATHER_QUICK_OPTIONS = ['آفتابی', 'ابری', 'بارانی', 'مه‌آلود', 'مرطوب پس از باران']
 
@@ -35,7 +35,6 @@ export function emptySample(tripId, order) {
     updatedAt: Date.now(),
 
     location: '',
-    altitude: '',
     habitat: [],
     habitatOther: '',
     substrate: [],
@@ -48,6 +47,8 @@ export function emptySample(tripId, order) {
       surface: [],
       surfaceOther: '',
       margin: [],
+      color: '',
+      colorChange: '',
     },
 
     hymenophore: {
@@ -58,6 +59,7 @@ export function emptySample(tripId, order) {
     stipe: {
       present: '',
       shape: [],
+      shapeOther: '',
       texture: '',
       ring: '',
       volva: '',
@@ -67,6 +69,7 @@ export function emptySample(tripId, order) {
     flesh: {
       texture: [],
       textureOther: '',
+      color: '',
       touchChange: '',
       cutChange: '',
     },

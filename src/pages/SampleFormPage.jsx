@@ -16,6 +16,7 @@ import TextureOutlinedIcon from '@mui/icons-material/TextureOutlined'
 import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined'
 import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined'
 import StickyNote2OutlinedIcon from '@mui/icons-material/StickyNote2Outlined'
+import MyLocationOutlinedIcon from '@mui/icons-material/MyLocationOutlined'
 
 import SelectableChipGroup from '../components/SelectableChipGroup.jsx'
 import PhotoManager from '../components/PhotoManager.jsx'
@@ -38,6 +39,8 @@ export default function SampleFormPage() {
   const [sample, setSample] = useState(null)
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState('location')
+  const [locating, setLocating] = useState(false)
+  const [locationError, setLocationError] = useState('')
 
   useEffect(() => {
     (async () => {
@@ -60,6 +63,27 @@ export default function SampleFormPage() {
   const patchHymenophore = patchGroup('hymenophore')
   const patchStipe = patchGroup('stipe')
   const patchFlesh = patchGroup('flesh')
+
+  const handleUseGPS = () => {
+    if (!navigator.geolocation) {
+      setLocationError('مرورگر شما از موقعیت‌یابی GPS پشتیبانی نمی‌کند')
+      return
+    }
+    setLocating(true)
+    setLocationError('')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords
+        patch({ location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` })
+        setLocating(false)
+      },
+      (err) => {
+        setLocationError('دریافت موقعیت ناموفق بود' + (err?.message ? `: ${err.message}` : ''))
+        setLocating(false)
+      },
+      { enableHighAccuracy: true, timeout: 15000 }
+    )
+  }
 
   const handleSave = async () => {
     const toSave = {
@@ -107,18 +131,28 @@ export default function SampleFormPage() {
             </AccordionSummary>
             <AccordionDetails>
               <Stack spacing={2}>
-                <TextField
-                  label="محل دقیق مشاهده"
-                  value={sample.location}
-                  onChange={(e) => patch({ location: e.target.value })}
-                  placeholder="مختصات یا توضیح مکانی"
-                />
-                <TextField
-                  label="ارتفاع تقریبی از سطح دریا (متر)"
-                  value={sample.altitude}
-                  onChange={(e) => patch({ altitude: e.target.value })}
-                  inputMode="numeric"
-                />
+                <Box>
+                  <TextField
+                    label="محل دقیق مشاهده"
+                    value={sample.location}
+                    onChange={(e) => patch({ location: e.target.value })}
+                    placeholder="مختصات GPS یا توضیح مکانی"
+                  />
+                  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mt: 1 }}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={locating ? <CircularProgress size={16} /> : <MyLocationOutlinedIcon />}
+                      onClick={handleUseGPS}
+                      disabled={locating}
+                    >
+                      دریافت موقعیت از GPS
+                    </Button>
+                    {locationError && (
+                      <Typography variant="caption" color="error">{locationError}</Typography>
+                    )}
+                  </Stack>
+                </Box>
                 <SelectableChipGroup
                   label="زیستگاه"
                   options={HABITAT_OPTIONS}
@@ -171,12 +205,38 @@ export default function SampleFormPage() {
                   onOtherChange={(v) => patchCap({ surfaceOther: v })}
                 />
                 <SelectableChipGroup
-                  label="حاشیه و تغییرات رنگی"
+                  label="حاشیه"
                   options={CAP_MARGIN_OPTIONS}
                   value={sample.cap.margin}
                   onChange={(v) => patchCap({ margin: v })}
                   dense
                 />
+
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                    رنگ
+                  </Typography>
+                  <TextField
+                    label="رنگ کلاهک"
+                    value={sample.cap.color}
+                    onChange={(e) => patchCap({ color: e.target.value })}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    label="تغییرات رنگی"
+                    value={sample.cap.colorChange}
+                    onChange={(e) => patchCap({ color: e.target.value })}
+                    sx={{ mb: 2 }}
+                  />
+                  {/* <SelectableChipGroup
+                    label="تغییر رنگ"
+                    options={COLOR_CHANGE_OPTIONS}
+                    value={sample.cap.colorChange}
+                    onChange={(v) => patchCap({ colorChange: v })}
+                    multiple={false}
+                    dense
+                  /> */}
+                </Box>
               </Stack>
             </AccordionDetails>
           </Accordion>
@@ -228,6 +288,8 @@ export default function SampleFormPage() {
                       options={STIPE_SHAPE_OPTIONS}
                       value={sample.stipe.shape}
                       onChange={(v) => patchStipe({ shape: v })}
+                      otherValue={sample.stipe.shapeOther}
+                      onOtherChange={(v) => patchStipe({ shapeOther: v })}
                     />
                     <SelectableChipGroup
                       label="توپر / توخالی"
@@ -278,6 +340,11 @@ export default function SampleFormPage() {
                   onChange={(v) => patchFlesh({ texture: v })}
                   otherValue={sample.flesh.textureOther}
                   onOtherChange={(v) => patchFlesh({ textureOther: v })}
+                />
+                <TextField
+                  label="رنگ گوشت"
+                  value={sample.flesh.color}
+                  onChange={(e) => patchFlesh({ color: e.target.value })}
                 />
                 <SelectableChipGroup
                   label="تغییر رنگ در اثر لمس / فشار"
